@@ -1,5 +1,30 @@
 let budgetController = ( () => {
 
+	let Expense = function(id, desc, value) {
+		this.id = id;
+		this.desc = desc;
+		this.value = value;
+	};
+
+	let Income = function(id, desc, value) {
+		this.id = id;
+		this.desc = desc;
+		this.value = value;
+	};
+
+
+
+	let data = {
+		allItems: {
+			exp: [],
+			inc: [],
+		},
+		totals: {
+			exp: 0,
+			inc: 0,
+		}
+	}
+
 })();
 
 let UIController = (() => {
@@ -38,8 +63,6 @@ let controller = ((budgetCtrl, UICtrl) => {
   let ctrlAddItem = () => {
     //Get field input data
     let input = UICtrl.getInput();
-    console.log(input);
-
     //Add item to budget controller
     //Add new item to UI
     //Calculate the budget
