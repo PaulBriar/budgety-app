@@ -40,7 +40,7 @@ let budgetController = ( () => {
 			let newItem, ID;
 
 			//Create new ID
-			data.allItems[type].length > 0 ? ID = data.allItems[type][data.allItems[type].length -1].ID + 1 : ID = 0;
+			data.allItems[type].length > 0 ? ID = data.allItems[type][data.allItems[type].length -1].id + 1 : ID = 0;
 
 			//Create new item based on 'inc' or 'exp' type
 			if(type === 'exp') {
@@ -52,6 +52,20 @@ let budgetController = ( () => {
 			data.allItems[type].push(newItem);
 			//Return new element
 			return newItem;
+		},
+
+		deleteItem: (type, id) => {
+			let ids, index;
+
+			ids = data.allItems[type].map((current) => {
+				return current.id;
+			});
+
+			index = ids.indexOf(id);
+
+			if (index !== -1) {
+				data.allItems[type].splice(index, 1);
+			}
 		},
 
 		calculateBudget: () => {
@@ -98,6 +112,7 @@ let UIController = (() => {
 		incLabel: '.budget__income--value',
 		expLabel: '.budget__expenses--value',
 		percLabel: '.budget__expenses--percentage',
+		container: '.container',
   }
 
   return {
@@ -114,10 +129,10 @@ let UIController = (() => {
 			//Create html string with placeholder text
 			if (type === 'inc') {
 				element = DOMstrings.incomeContainer;
-				html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+				html = '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 			} else if (type === 'exp') {
 				element = DOMstrings.expenseContainer;
-				html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+				html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 			}
 			//Replace placeholder text with actual data
 			newHtml = html.replace('%id%', obj.id);
@@ -141,6 +156,12 @@ let UIController = (() => {
 			fieldsArr[0].focus();
 		},
 
+		deleteListItem: (selectorID) => {
+			let element = document.getElementById(selectorID);
+
+			element.parentNode.removeChild(element);
+		},
+
 		displayBudget: (obj) => {
 			document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
 			document.querySelector(DOMstrings.incLabel).textContent = obj.totalInc;
@@ -158,7 +179,7 @@ let UIController = (() => {
     }
   }
 })();
-
+//Global app controller
 let controller = ((budgetCtrl, UICtrl) => {
   let setupEventListeners = () => {
     let DOM = UICtrl.getDomStrings();
@@ -167,7 +188,10 @@ let controller = ((budgetCtrl, UICtrl) => {
       if(event.keyCode === 13 || event.which === 13){
         ctrlAddItem();
     }
-  });
+	});
+
+	document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+
 	};
 
 	let updateBudget = () => {
@@ -195,7 +219,27 @@ let controller = ((budgetCtrl, UICtrl) => {
 		//Calculate and update budget
 		updateBudget();
 		}
-  }
+	};
+
+	let ctrlDeleteItem = (event) => {
+		let itemID, splitID, type, id;
+
+		itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
+
+		if (itemID) {
+			splitID = itemID.split('-');
+			type = splitID[0];
+			id = parseInt(splitID[1]);
+			//Delete item from data structure
+			budgetCtrl.deleteItem(type, id);
+			//Delete the item from UI
+			UICtrl.deleteListItem(itemID);
+			//Update UI
+			updateBudget();
+		};
+
+
+	};
 
   return {
     init: () => {
